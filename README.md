@@ -21,23 +21,25 @@
 
 ## Introduction
 
-LeviLauncher is a lightweight, open-source Android launcher specifically designed for players of Minecraft: Bedrock Edition (MCBE). It provides a flexible and user-friendly alternative to the standard Google Play installation, allowing you to manage multiple game versions and extend functionality with external modules.
+**LeviLauncher Unlocked** is a modified fork of [LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid), a lightweight, open-source Android launcher specifically designed for players of Minecraft: Bedrock Edition (MCBE). 
 
-LeviLauncher enables you to import your official Minecraft APK and run it directly without requiring system installation. The launcher supports loading external native modules to enhance gameplay, provides robust multi-version management with complete isolation between installations, and includes built-in tools for managing resource packs and worlds. Whether you're looking to organize different game versions, test modifications, or optimize your gaming experience, LeviLauncher offers the flexibility you need.
+While the official upstream launcher is strictly locked to the official `com.mojang.minecraftpe` Google Play installation, this **Unlocked fork adds universal package support**. It allows you to discover, manage, and launch **any installed Minecraft package**, including patched and cloned clients (such as `.patch`, `.prpatch`, `.capespatch`, `.beta`, Preview, etc.) as well as importing custom patched APKs and APKS bundles.
 
-### Key Features
+### Fork Highlights & Features
 
-- **APK Import & Installation-Free Launching** – Import your official Minecraft APK and run it directly without system installation
-- **SO Module Loading** – Load external native SO modules to extend or enhance Minecraft features and performance
-- **Multi-Version Management & Version Isolation** – Manage multiple Minecraft versions independently, with separated configurations and data
-- **Multiple Xbox Account Management** – Manage multiple Xbox accounts inside the launcher and switch between them seamlessly
-- **Resource Pack & World Management** – Import, export, and back up your resource packs and worlds with the built-in manager
+- **Universal Package Support** – Detects and runs any Minecraft Bedrock package on your device, not just the official Play Store edition (`com.mojang.minecraftpe`, `com.mojang.minecraftpe.patch`, `com.mojang.minecraftpe.prpatch`, `com.mojang.minecraftpe.capespatch`, and custom cloned packages).
+- **Patched Version Display** – Installed patched packages are clearly identified and tagged in the version selector and instance manager (e.g. `Minecraft [.patch]`, `Minecraft [.prpatch]`, `Minecraft [.capespatch]`) with independent profile data.
+- **Support for Patched APK/APKS Imports** – Import patched APK or APKS bundles directly without encountering "Not a Minecraft APK" validation rejections.
+- **Installation-Free & Unlocked Launching** – Bypassed Play Store verification restrictions, allowing you to run imported Minecraft APKs directly.
+- **Native SO Module Loading** – Load external native SO mods and preloader modules to enhance gameplay and performance.
+- **Multi-Version Management & Version Isolation** – Manage multiple Minecraft versions independently with isolated directories, configurations, and worlds.
+- **Xbox Account & Content Management** – Switch seamlessly between multiple Xbox accounts and manage worlds, resource packs, and behavior packs.
 
 ---
 
 ## System Requirements
 
-Before installing LeviLauncher, ensure your device meets the following minimum specifications:
+Before installing LeviLauncher Unlocked, ensure your device meets the following minimum specifications:
 
 - **Operating System:** Android 9.0 (API 28) or higher
 - **Device Architecture:** ARM64 (v8a)
@@ -52,16 +54,21 @@ Before installing LeviLauncher, ensure your device meets the following minimum s
 
 ### Prerequisites
 
-Before proceeding with LeviLauncher installation, ensure that you have the official Minecraft Bedrock Edition app installed on your device from Google Play. This is required for LeviLauncher to function properly.
+You can use LeviLauncher Unlocked with:
+- The official Minecraft Bedrock Edition from Google Play, **OR**
+- Any installed patched/cloned version (e.g., `.patch`, `.prpatch`, `.capespatch`), **OR**
+- A standalone Minecraft APK or APKS bundle imported directly into the launcher.
+
+System installation of the official package is not mandatory if you import an APK directly.
 
 ### Installation Steps
 
-1. Visit the [Releases Page](https://github.com/LiteLDev/LeviLaunchroid/releases) and download the latest APK build
-2. Open your device Settings and navigate to Security or Applications
-3. Enable "Unknown Sources" or "Allow installation from unknown sources" to permit APK installation
-4. Locate the downloaded APK file using your file manager and tap to install
-5. Grant the necessary permissions when prompted during installation
-6. Once installed, open LeviLauncher from your application drawer
+1. Download the latest APK build from GitHub Releases or compile from source using GitHub Actions.
+2. Open your device Settings and navigate to Security or Applications.
+3. Enable "Allow installation from unknown sources" for your browser or file manager.
+4. Locate the downloaded APK file and tap to install.
+5. Grant the required permissions (including storage access and package query permissions).
+6. Open LeviLauncher from your app drawer.
 
 
 ---
@@ -196,3 +203,9 @@ LeviLauncher would not be possible without the contributions and support of many
 **Made with ❤️ by the LeviMC Community**
 
 </div>
+
+---
+
+> [!NOTE]
+> **Notice:** This repository is just a personal testing project. I do not have any intention or plans to update or maintain it regularly.
+

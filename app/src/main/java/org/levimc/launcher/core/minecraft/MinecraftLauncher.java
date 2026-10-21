@@ -58,7 +58,7 @@ public class MinecraftLauncher {
         String systemAbi = abiToSystemLibDir(Build.SUPPORTED_ABIS[0]);
         File dstLibDir = getRuntimeLibAbiDir(context, getStorageProfileId(version), systemAbi);
         fakeInfo.nativeLibraryDir = dstLibDir.getAbsolutePath();
-        fakeInfo.packageName = packageName;
+        fakeInfo.packageName = (packageName != null && !packageName.isEmpty()) ? packageName : MC_PACKAGE_NAME;
         fakeInfo.dataDir = LauncherStorage.getProfileDataRoot(context, getStorageProfileId(version)).getAbsolutePath();
 
         File splitsFolder = new File(version.versionDir, "splits");
@@ -152,7 +152,11 @@ public class MinecraftLauncher {
 
     public static String getStorageProfileId(GameVersion version) {
         if (version == null) return LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
-        if (version.isInstalled) return LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
+        if (version.isInstalled) {
+            return LauncherStorage.sanitizeProfileId(version.packageName != null && !version.packageName.isEmpty()
+                    ? version.packageName
+                    : LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+        }
         return LauncherStorage.sanitizeProfileId(version.directoryName);
     }
 
@@ -168,6 +172,7 @@ public class MinecraftLauncher {
         sourceIntent.putExtra("MC_PATH", version.versionDir == null ? "" : version.versionDir.getAbsolutePath());
         sourceIntent.putExtra("IS_INSTALLED", version.isInstalled);
         sourceIntent.putExtra("VERSION_ISOLATION", versionIsolation);
+        sourceIntent.putExtra("MC_PACKAGE_NAME", version.packageName != null ? version.packageName : MC_PACKAGE_NAME);
         sourceIntent.putExtra(EXTRA_STORAGE_PROFILE_ID, profileId);
         sourceIntent.putExtra(EXTRA_STORAGE_FILES_DIR, filesDir.getAbsolutePath());
         sourceIntent.putExtra(EXTRA_STORAGE_EXTERNAL_FILES_DIR, externalFilesDir.getAbsolutePath());

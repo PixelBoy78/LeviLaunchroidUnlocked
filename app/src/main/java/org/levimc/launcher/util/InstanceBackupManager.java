@@ -764,9 +764,9 @@ public class InstanceBackupManager {
             throw new IOException("Minecraft is not installed");
         }
 
-        File profileRoot = LauncherStorage.getVersionRoot(context, LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+        File profileRoot = LauncherStorage.getVersionRoot(context, packageName);
         File sharedRoot = LauncherStorage.getSharedRoot(context);
-        File runtimeRoot = MinecraftLauncher.getRuntimeLibDir(context, LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+        File runtimeRoot = MinecraftLauncher.getRuntimeLibDir(context, packageName);
 
         extractBackupEntries(zipFile, callback, (entryName, relativePath) -> {
             if (entryName.startsWith(PROFILE_PREFIX)) {
@@ -783,7 +783,7 @@ public class InstanceBackupManager {
             }
             return null;
         });
-        return firstNonEmpty(manifest.instanceName, LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+        return firstNonEmpty(manifest.instanceName, packageName);
     }
 
     private boolean shouldSkipInstalledProfileEntry(String relativePath) {

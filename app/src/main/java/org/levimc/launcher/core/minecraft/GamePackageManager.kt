@@ -30,7 +30,14 @@ class GamePackageManager private constructor(
     private val nativeLibDir: String
     private val applicationInfo: ApplicationInfo
 
-    private val knownPackages = arrayOf(MinecraftLauncher.MC_PACKAGE_NAME)
+    private val knownPackages = arrayOf(
+        MinecraftLauncher.MC_PACKAGE_NAME,
+        "com.mojang.minecraftpe.patch",
+        "com.mojang.minecraftpe.prpatch",
+        "com.mojang.minecraftpe.capespatch",
+        "com.mojang.minecraftpe.beta",
+        "com.mojang.minecraftpreview"
+    )
 
     private val requiredLibs = arrayOf(
         "libc++_shared.so",
@@ -62,17 +69,37 @@ class GamePackageManager private constructor(
 
     init {
         report("GamePackageManager init started")
-        val packageName = detectGamePackage() ?: throw IllegalStateException("Minecraft not found")
-        report("Detected Minecraft package: $packageName")
-        packageContext = context.createPackageContext(
-            packageName,
-            Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
-        )
-        
+        val targetPackageName = when {
+            version != null && !version.packageName.isNullOrBlank() -> version.packageName
+            else -> detectGamePackage()
+        }
+        val isInstalled = targetPackageName != null && isPackageInstalled(targetPackageName)
+
         if (version != null && !version.isInstalled) {
-            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(version, MinecraftLauncher.MC_PACKAGE_NAME)
+            val fakePkgName = targetPackageName ?: MinecraftLauncher.MC_PACKAGE_NAME
+            packageContext = if (isInstalled) {
+                try {
+                    context.createPackageContext(
+                        targetPackageName,
+                        Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
+                    )
+                } catch (_: Exception) {
+                    context
+                }
+            } else {
+                context
+            }
+            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(version, fakePkgName)
             nativeLibDir = applicationInfo.nativeLibraryDir
         } else {
+            val installedPkgName = targetPackageName?.takeIf { isInstalled }
+                ?: detectGamePackage()
+                ?: throw IllegalStateException("Minecraft not found")
+            report("Detected Minecraft package: $installedPkgName")
+            packageContext = context.createPackageContext(
+                installedPkgName,
+                Context.CONTEXT_IGNORE_SECURITY or Context.CONTEXT_INCLUDE_CODE
+            )
             applicationInfo = packageContext.applicationInfo
             nativeLibDir = resolveNativeLibDir()
         }
@@ -86,7 +113,28 @@ class GamePackageManager private constructor(
     }
 
     private fun detectGamePackage(): String? {
-        return knownPackages.firstOrNull { isPackageInstalled(it) }
+        for (pkg in knownPackages) {
+            if (isPackageInstalled(pkg)) return pkg
+        }
+        try {
+            val installedPkgs = context.packageManager.getInstalledPackages(0)
+            for (info in installedPkgs) {
+                val name = info.packageName ?: continue
+                if (isMinecraftPackage(name, info.applicationInfo)) {
+                    return name
+                }
+            }
+        } catch (_: Exception) {}
+        return null
+    }
+
+    private fun isMinecraftPackage(name: String, appInfo: ApplicationInfo?): Boolean {
+        if (org.levimc.launcher.util.ApkUtils.isMinecraftPackage(name)) return true
+        if (appInfo?.nativeLibraryDir != null) {
+            val lib = File(appInfo.nativeLibraryDir, "libminecraftpe.so")
+            if (lib.exists()) return true
+        }
+        return false
     }
 
     private fun isPackageInstalled(packageName: String): Boolean {

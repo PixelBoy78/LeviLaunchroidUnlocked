@@ -30,8 +30,18 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"
         tools:ignore="RequestInstallPackagesPolicy" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesCondition" />
     <queries>
         <package android:name="com.mojang.minecraftpe" />
+        <package android:name="com.mojang.minecraftpe.patch" />
+        <package android:name="com.mojang.minecraftpe.prpatch" />
+        <package android:name="com.mojang.minecraftpe.capespatch" />
+        <package android:name="com.mojang.minecraftpe.beta" />
+        <package android:name="com.mojang.minecraftpreview" />
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />

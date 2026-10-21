@@ -155,6 +155,9 @@ object MinecraftRuntimePreparer {
         val versionCode = intent.getStringExtra("MINECRAFT_VERSION") ?: ""
         val versionDirName = intent.getStringExtra("MINECRAFT_VERSION_DIR") ?: ""
         val isInstalled = intent.getBooleanExtra("IS_INSTALLED", false)
+        val packageName = intent.getStringExtra("MC_PACKAGE_NAME")
+            ?: intent.getStringExtra(MinecraftLauncher.EXTRA_STORAGE_PROFILE_ID)
+            ?: MinecraftLauncher.MC_PACKAGE_NAME
 
         return if (!versionDir.isNullOrEmpty()) {
             GameVersion(
@@ -163,7 +166,7 @@ object MinecraftRuntimePreparer {
                 versionCode,
                 File(versionDir),
                 isInstalled,
-                MinecraftLauncher.MC_PACKAGE_NAME,
+                packageName,
                 ""
             )
         } else if (versionCode.isNotEmpty()) {
@@ -173,7 +176,7 @@ object MinecraftRuntimePreparer {
                 versionCode,
                 null,
                 isInstalled,
-                MinecraftLauncher.MC_PACKAGE_NAME,
+                packageName,
                 ""
             )
         } else {
@@ -197,6 +200,7 @@ object MinecraftRuntimePreparer {
         version.versionDir?.let { launchIntent.putExtra("MC_PATH", it.absolutePath) }
         launchIntent.putExtra("IS_INSTALLED", version.isInstalled)
         launchIntent.putExtra("VERSION_ISOLATION", versionIsolation)
+        version.packageName?.let { launchIntent.putExtra("MC_PACKAGE_NAME", it) }
         launchIntent.putExtra(MinecraftLauncher.EXTRA_STORAGE_PROFILE_ID, profileId)
         launchIntent.putExtra(MinecraftLauncher.EXTRA_STORAGE_FILES_DIR, filesDir.absolutePath)
         launchIntent.putExtra(MinecraftLauncher.EXTRA_STORAGE_EXTERNAL_FILES_DIR, externalFilesDir.absolutePath)
@@ -206,7 +210,8 @@ object MinecraftRuntimePreparer {
         val mcInfo: ApplicationInfo = if (version.isInstalled) {
             gameManager.getPackageContext().applicationInfo
         } else {
-            MinecraftLauncher(context).createFakeApplicationInfo(version, MinecraftLauncher.MC_PACKAGE_NAME)
+            val targetPkg = version.packageName?.takeIf { it.isNotBlank() } ?: MinecraftLauncher.MC_PACKAGE_NAME
+            MinecraftLauncher(context).createFakeApplicationInfo(version, targetPkg)
         }
         launchIntent.putExtra("MC_SRC", mcInfo.sourceDir)
         val splitSourceDirs = mcInfo.splitSourceDirs

@@ -16,20 +16,72 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import java.util.Enumeration;
+import java.util.zip.ZipFile;
+
 public class ApkUtils {
     public interface LibExtractProgressCallback {
         void onBytesExtracted(int bytesExtracted);
     }
 
+    public static boolean isMinecraftPackage(String packageName) {
+        if (packageName == null || packageName.isEmpty()) {
+            return false;
+        }
+        String lower = packageName.toLowerCase();
+        return lower.equals("com.mojang.minecraftpe")
+                || lower.startsWith("com.mojang.minecraftpe.")
+                || lower.contains("minecraftpe")
+                || (lower.startsWith("com.mojang.") && lower.contains("minecraft"));
+    }
+
+    public static boolean hasMinecraftNativeLib(File apkFile) {
+        if (apkFile == null || !apkFile.exists()) {
+            return false;
+        }
+        try (ZipFile zipFile = new ZipFile(apkFile)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String name = entry.getName();
+                if (name != null && name.endsWith("libminecraftpe.so")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public static boolean isMinecraftApk(PackageInfo info, File apkFile) {
+        if (info != null && isMinecraftPackage(info.packageName)) {
+            return true;
+        }
+        return hasMinecraftNativeLib(apkFile);
+    }
+
+    public static String buildImportedVersionName(String packageName, String versionName) {
+        String safeVersion = (versionName != null && !versionName.isEmpty()) ? versionName : "unknown";
+        if (packageName != null && packageName.startsWith("com.mojang.minecraftpe.")) {
+            String suffix = packageName.substring("com.mojang.minecraftpe.".length());
+            return "Minecraft_" + safeVersion + "_" + suffix;
+        } else if (packageName != null && !packageName.equals("com.mojang.minecraftpe") && !packageName.isEmpty()) {
+            String cleanPkg = packageName.replaceAll("[^a-zA-Z0-9_.-]", "_");
+            return "Minecraft_" + safeVersion + "_" + cleanPkg;
+        }
+        return "Minecraft_" + safeVersion;
+    }
+
     public static String extractMinecraftVersionNameFromUri(Context context, Uri uri) {
         if ("file".equals(uri.getScheme()) && uri.getPath() != null) {
             PackageManager pm = context.getPackageManager();
-            PackageInfo info = pm.getPackageArchiveInfo(uri.getPath(), 0);
+            File apkFile = new File(uri.getPath());
+            PackageInfo info = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
             if (info != null) {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
-                    return "Minecraft_" + versionName;
+                if (isMinecraftApk(info, apkFile) && versionName != null && !versionName.isEmpty()) {
+                    return buildImportedVersionName(packageName, versionName);
                 }
             }
             return "Error Apk";
@@ -53,8 +105,8 @@ public class ApkUtils {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
 
-                if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
-                    return "Minecraft_" + versionName;
+                if (isMinecraftApk(info, tempFile) && versionName != null && !versionName.isEmpty()) {
+                    return buildImportedVersionName(packageName, versionName);
                 }
             }
         } catch (Exception e) {
@@ -89,8 +141,8 @@ public class ApkUtils {
                         if (info != null) {
                             String packageName = info.packageName;
                             String versionName = info.versionName;
-                            if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
-                                return "Minecraft_" + versionName;
+                            if (isMinecraftApk(info, tempApkFile) && versionName != null && !versionName.isEmpty()) {
+                                return buildImportedVersionName(packageName, versionName);
                             }
                         }
                         break;
