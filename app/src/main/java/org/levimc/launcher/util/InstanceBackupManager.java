@@ -26,6 +26,7 @@ import com.google.gson.GsonBuilder;
 import org.levimc.launcher.core.minecraft.MinecraftLauncher;
 import org.levimc.launcher.core.versions.GameVersion;
 import org.levimc.launcher.core.versions.VersionManager;
+import org.levimc.launcher.core.versions.VersionProfileMetadata;
 import org.levimc.launcher.core.versions.VersionProfileMetadataStore;
 
 import java.io.BufferedInputStream;

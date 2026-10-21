@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
 import org.levimc.launcher.core.minecraft.MinecraftLauncher;
+import org.levimc.launcher.core.versions.VersionProfileMetadata;
 import org.levimc.launcher.core.versions.VersionProfileMetadataStore;
 
 import java.io.BufferedInputStream;
