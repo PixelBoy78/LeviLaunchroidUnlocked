@@ -174,7 +174,7 @@ public class ApkInstaller {
 
                 String versionName = extractVersionName(apkOrApksUri, baseDir, dirName);
                 postProgress(PROGRESS_METADATA_DONE);
-                writeProfileMetadata(metadataDir, dirName, versionName);
+                writeProfileMetadata(metadataDir, dirName, versionName, baseDir);
 
                 postProgress(PROGRESS_MAX);
                 postSuccess(versionName);
@@ -213,9 +213,23 @@ public class ApkInstaller {
         }
     }
 
-    private static void writeProfileMetadata(File metadataDir, String dirName, String versionName) throws IOException {
+    private void writeProfileMetadata(File metadataDir, String dirName, String versionName, File baseDir) throws IOException {
+        String packageName = null;
+        File baseApkLevi = new File(baseDir, APK_FILE_NAME);
+        if (baseApkLevi.exists()) {
+            try {
+                PackageInfo info = context.getPackageManager().getPackageArchiveInfo(baseApkLevi.getAbsolutePath(), 0);
+                if (info != null) {
+                    packageName = info.packageName;
+                }
+            } catch (Exception ignored) {}
+        }
         VersionProfileMetadataStore store = new VersionProfileMetadataStore();
-        store.loadOrCreate(metadataDir, VersionProfileMetadataStore.Defaults.custom(dirName, versionName));
+        VersionProfileMetadata metadata = store.loadOrCreate(metadataDir, VersionProfileMetadataStore.Defaults.custom(dirName, versionName));
+        if (packageName != null && !packageName.isEmpty()) {
+            metadata.packageName = packageName;
+            store.save(metadataDir, metadata);
+        }
     }
 
     private void postProgress(int progress) {
@@ -295,9 +309,8 @@ public class ApkInstaller {
             PackageManager pm = context.getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
             if (info != null) {
-                String pkgName = info.packageName;
                 String vName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(pkgName) && vName != null && !vName.isEmpty()) {
+                if (ApkUtils.isMinecraftApk(info, apkFile) && vName != null && !vName.isEmpty()) {
                     return vName;
                 }
             }

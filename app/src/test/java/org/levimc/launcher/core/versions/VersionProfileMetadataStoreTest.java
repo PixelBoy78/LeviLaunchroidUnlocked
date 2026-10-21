@@ -64,6 +64,25 @@ public class VersionProfileMetadataStoreTest {
     }
 
     @Test
+    public void installedPatchedProfileSetsPackageDirectoryName() throws Exception {
+        File metadataDir = temporaryFolder.newFolder("installed-patched");
+
+        VersionProfileMetadata metadata = store.loadOrCreate(
+                metadataDir,
+                VersionProfileMetadataStore.Defaults.installed("com.mojang.minecraftpe.patch", "1.21.80")
+        );
+
+        assertEquals("com.mojang.minecraftpe.patch", metadata.profileId);
+        assertEquals("com.mojang.minecraftpe.patch", metadata.directoryName);
+        assertEquals("1.21.80", metadata.versionName);
+        assertFalse(metadata.versionIsolation);
+        assertFalse(metadata.launchVertically);
+        assertTrue(metadata.installed);
+        assertEquals("com.mojang.minecraftpe.patch", metadata.packageName);
+        assertTrue(profileJson(metadataDir).isFile());
+    }
+
+    @Test
     public void legacyTxtFilesAreMergedIntoProfileJson() throws Exception {
         File metadataDir = temporaryFolder.newFolder("legacy");
         write(metadataDir, "version.txt", "1.21.90");

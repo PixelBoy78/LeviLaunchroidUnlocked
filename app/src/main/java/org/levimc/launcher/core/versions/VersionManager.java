@@ -27,7 +27,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -339,23 +341,74 @@ public class VersionManager {
         File baseDir = LauncherStorage.getMinecraftRoot(context);
 
         PackageManager pm = context.getPackageManager();
+        List<PackageInfo> installedMinecraftPackages = new ArrayList<>();
+        Set<String> processedPackages = new HashSet<>();
+
+        String[] knownPackageNames = {
+                MinecraftLauncher.MC_PACKAGE_NAME,
+                "com.mojang.minecraftpe.patch",
+                "com.mojang.minecraftpe.prpatch",
+                "com.mojang.minecraftpe.capespatch",
+                "com.mojang.minecraftpe.beta",
+                "com.mojang.minecraftpreview"
+        };
+        for (String pkg : knownPackageNames) {
+            try {
+                PackageInfo pi = pm.getPackageInfo(pkg, 0);
+                if (pi != null && pi.packageName != null && processedPackages.add(pi.packageName)) {
+                    installedMinecraftPackages.add(pi);
+                }
+            } catch (PackageManager.NameNotFoundException ignored) {
+            }
+        }
+
         try {
-            PackageInfo pi = pm.getPackageInfo(MinecraftLauncher.MC_PACKAGE_NAME, 0);
+            List<PackageInfo> allInstalled = pm.getInstalledPackages(0);
+            if (allInstalled != null) {
+                for (PackageInfo pi : allInstalled) {
+                    if (pi != null && pi.packageName != null && !processedPackages.contains(pi.packageName)) {
+                        if (isMinecraftPackageInfo(pi)) {
+                            processedPackages.add(pi.packageName);
+                            installedMinecraftPackages.add(pi);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        for (PackageInfo pi : installedMinecraftPackages) {
             File versionDir = getVersionDirForPackage(baseDir, pi.packageName);
             if (!versionDir.exists()) versionDir.mkdirs();
             
             File gamesDir = LauncherStorage.getProfileGameDataDir(context, pi.packageName);
             if (!gamesDir.exists()) gamesDir.mkdirs();
 
-            String appLabel = String.valueOf(pi.applicationInfo.loadLabel(pm));
-            boolean hasSoFiles = hasSoFilesInDir(new File(pi.applicationInfo.nativeLibraryDir));
+            String appLabel = (pi.applicationInfo != null) ? String.valueOf(pi.applicationInfo.loadLabel(pm)) : "Minecraft";
+            boolean hasSoFiles = pi.applicationInfo != null && hasSoFilesInDir(new File(pi.applicationInfo.nativeLibraryDir));
+            String profileId = pi.packageName;
             VersionProfileMetadata metadata = loadMetadata(
-                    LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID,
+                    profileId,
                     VersionProfileMetadataStore.Defaults.installed(pi.packageName, pi.versionName)
             );
             syncInstalledMetadata(pi.packageName, pi.versionName, metadata);
             String versionName = safeValue(metadata.versionName, pi.versionName);
-            String displayBaseName = safeValue(metadata.displayName, appLabel);
+
+            String defaultDisplayBaseName;
+            if (MinecraftLauncher.MC_PACKAGE_NAME.equals(pi.packageName)) {
+                defaultDisplayBaseName = appLabel;
+            } else if (pi.packageName.startsWith("com.mojang.minecraftpe.")) {
+                String suffix = pi.packageName.substring("com.mojang.minecraftpe".length());
+                if (!appLabel.toLowerCase().contains(suffix.replace(".", "").toLowerCase())) {
+                    defaultDisplayBaseName = appLabel + " [" + suffix + "]";
+                } else {
+                    defaultDisplayBaseName = appLabel;
+                }
+            } else {
+                defaultDisplayBaseName = appLabel + " (" + pi.packageName + ")";
+            }
+
+            String displayBaseName = safeValue(metadata.displayName, defaultDisplayBaseName);
             String displayName = displayBaseName + " (" + versionName + ")";
 
             GameVersion gv = new GameVersion(
@@ -373,12 +426,13 @@ public class VersionManager {
                 gv.isExtractFalse = true;
             }
 
-            gv.abiList = inferAbiFromNativeLibDir(pi.applicationInfo.nativeLibraryDir, gv);
+            if (pi.applicationInfo != null) {
+                gv.abiList = inferAbiFromNativeLibDir(pi.applicationInfo.nativeLibraryDir, gv);
+            }
             gv.versionIsolation = metadata.versionIsolation;
             gv.launchVertically = metadata.launchVertically;
 
             installedVersions.add(gv);
-        } catch (PackageManager.NameNotFoundException ignored) {
         }
 
         File[] dirs = baseDir.listFiles(File::isDirectory);
@@ -397,9 +451,20 @@ public class VersionManager {
         restoreSelectedVersion();
     }
 
+    private boolean isMinecraftPackageInfo(PackageInfo pi) {
+        if (pi == null || pi.packageName == null) return false;
+        if (ApkUtils.isMinecraftPackage(pi.packageName)) return true;
+        if (pi.applicationInfo != null && pi.applicationInfo.nativeLibraryDir != null) {
+            File soFile = new File(pi.applicationInfo.nativeLibraryDir, "libminecraftpe.so");
+            if (soFile.exists()) return true;
+        }
+        return false;
+    }
+
     private void syncInstalledMetadata(String packageName, String versionName, VersionProfileMetadata metadata) {
-        boolean needsSync = !LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID.equals(metadata.profileId)
-                || !LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID.equals(metadata.directoryName)
+        String profileId = safeValue(packageName, LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+        boolean needsSync = !profileId.equals(metadata.profileId)
+                || !profileId.equals(metadata.directoryName)
                 || !safeValue(metadata.versionName, "").equals(versionName)
                 || !metadata.installed
                 || !safeValue(metadata.packageName, "").equals(packageName);
@@ -407,13 +472,13 @@ public class VersionManager {
             return;
         }
         try {
-            File metadataDir = LauncherStorage.getProfileMetadataDir(context, LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID);
+            File metadataDir = LauncherStorage.getProfileMetadataDir(context, profileId);
             metadataStore.update(
                     metadataDir,
                     VersionProfileMetadataStore.Defaults.installed(packageName, versionName),
                     current -> {
-                        current.profileId = LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
-                        current.directoryName = LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
+                        current.profileId = profileId;
+                        current.directoryName = profileId;
                         current.versionName = versionName;
                         current.installed = true;
                         current.packageName = packageName;
@@ -425,8 +490,8 @@ public class VersionManager {
                     }
             );
         } catch (IOException ignored) {
-            metadata.profileId = LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
-            metadata.directoryName = LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
+            metadata.profileId = profileId;
+            metadata.directoryName = profileId;
             metadata.versionName = versionName;
             metadata.installed = true;
             metadata.packageName = packageName;
@@ -484,13 +549,16 @@ public class VersionManager {
         String displayBaseName = safeValue(metadata.displayName, directoryName);
         String displayName = displayBaseName + " (" + versionCode + ")";
 
+        File apkFile = new File(dir, "base.apk.levi");
+        String apkPackageName = getApkPackageName(apkFile);
+
         GameVersion gv = new GameVersion(
                 directoryName,
                 displayName,
                 versionCode,
                 dir,
                 false,
-                null,
+                safeValue(metadata.packageName, apkPackageName),
                 "unknown"
         );
 
@@ -502,6 +570,18 @@ public class VersionManager {
         gv.launchVertically = metadata.launchVertically;
 
         return gv;
+    }
+
+    private String getApkPackageName(File apkFile) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo pi = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
+            if (pi != null && pi.packageName != null) {
+                return pi.packageName;
+            }
+        } catch (Exception ignored) {
+        }
+        return MinecraftLauncher.MC_PACKAGE_NAME;
     }
 
     public void setInstanceVersionIsolation(GameVersion version, boolean enabled) {
@@ -585,7 +665,12 @@ public class VersionManager {
 
     private String getMetadataDirectoryName(GameVersion version) {
         if (version == null) return LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
-        return version.isInstalled ? LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID : version.directoryName;
+        if (version.isInstalled) {
+            return (version.packageName != null && !version.packageName.isEmpty())
+                    ? version.packageName
+                    : LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
+        }
+        return version.directoryName;
     }
 
     private interface GameVersionMutator {
