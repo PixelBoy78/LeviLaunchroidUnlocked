@@ -1,211 +1,174 @@
 <div align="center">
 
-![LeviLauncher Logo](https://avatars.githubusercontent.com/u/78095377?s=200&v=4)
+<img src="https://avatars.githubusercontent.com/u/78095377?s=200&v=4" alt="LeviLauncher Logo" width="120" style="border-radius: 20%;" />
 
 # LeviLauncher Unlocked
 
-![Banner](https://camo.githubusercontent.com/bd7bd77cb422a267057d9863095b239b096d4f46dc831a37b45867a9acfad697/68747470733a2f2f63617073756c652d72656e6465722e76657263656c2e6170702f6170693f747970653d576176696e6726636f6c6f723d74696d654772616469656e74266865696768743d33303026616e696d6174696f6e3d66616465496e2673656374696f6e3d68656164657226746578743d4c6576694d4326666f6e7453697a653d313230)
+**A lightweight, unlocked Android launcher for Minecraft: Bedrock Edition**  
+*Universal package detection • Patched client support • Multi-instance isolation*
 
-**A lightweight Android launcher for Minecraft: Bedrock Edition**
+[![Platform: Android 9.0+](https://img.shields.io/badge/Platform-Android%209.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
+[![Architecture: ARM64](https://img.shields.io/badge/Arch-ARM64--v8a-FF6F00?style=for-the-badge&logo=arm&logoColor=white)](https://arm.com/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
+[![Status: Testing](https://img.shields.io/badge/Status-Experimental%20%2F%20Testing-orange?style=for-the-badge)](#testing-project-notice)
 
-[![GitHub Release](https://img.shields.io/github/v/release/LiteLDev/LeviLaunchroid?style=flat-square&color=blue)](https://github.com/LiteLDev/LeviLaunchroid/releases)
-[![License: Apache 2.0](https://img.shields.io/github/license/LiteLDev/LeviLaunchroid)](https://github.com/LiteLDev/LeviLaunchroid/blob/main/LICENSE)
-[![Issues](https://img.shields.io/github/issues/LiteLDev/LeviLaunchroid?style=flat-square&color=red)](https://github.com/LiteLDev/LeviLaunchroid/issues)
-[![Stars](https://img.shields.io/github/stars/LiteLDev/LeviLaunchroid?style=flat-square&color=yellow)](https://github.com/LiteLDev/LeviLaunchroid)
-[![Downloads](https://img.shields.io/github/downloads/LiteLDev/LeviLaunchroid/total.svg)](https://github.com/LiteLDev/LeviLaunchroid/releases)
-[![Android](https://img.shields.io/badge/Android-9.0%2B-green?style=flat-square&logo=android)](https://www.android.com/)
+<br/>
+
+[Overview](#overview) •
+[Features](#key-features) •
+[Comparison](#upstream-vs-unlocked) •
+[Supported Packages](#supported-packages) •
+[Requirements](#system-requirements) •
+[Installation](#installation) •
+[Building](#building-from-source) •
+[Credits](#credits--acknowledgements)
 
 </div>
 
 ---
 
-## Introduction
+## Overview
 
-**LeviLauncher Unlocked** is a modified fork of [LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid), a lightweight, open-source Android launcher specifically designed for players of Minecraft: Bedrock Edition (MCBE). 
+**LeviLauncher Unlocked** is an enhanced fork of [LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid) by LiteLDev. 
 
-While the official upstream launcher is strictly locked to the official `com.mojang.minecraftpe` Google Play installation, this **Unlocked fork adds universal package support**. It allows you to discover, manage, and launch **any installed Minecraft package**, including patched and cloned clients (such as `.patch`, `.prpatch`, `.capespatch`, `.beta`, Preview, etc.) as well as importing custom patched APKs and APKS bundles.
+While the official upstream launcher is strictly restricted to the official Google Play release (`com.mojang.minecraftpe`), **LeviLauncher Unlocked removes package name restrictions**. It provides full, first-class support for discovering, managing, and launching any installed Minecraft: Bedrock Edition package on Android—including patched, cloned, beta, and preview variants—as well as importing custom patched APK and APKS files.
 
-### Fork Highlights & Features
+---
 
-- **Universal Package Support** – Detects and runs any Minecraft Bedrock package on your device, not just the official Play Store edition (`com.mojang.minecraftpe`, `com.mojang.minecraftpe.patch`, `com.mojang.minecraftpe.prpatch`, `com.mojang.minecraftpe.capespatch`, and custom cloned packages).
-- **Patched Version Display** – Installed patched packages are clearly identified and tagged in the version selector and instance manager (e.g. `Minecraft [.patch]`, `Minecraft [.prpatch]`, `Minecraft [.capespatch]`) with independent profile data.
-- **Support for Patched APK/APKS Imports** – Import patched APK or APKS bundles directly without encountering "Not a Minecraft APK" validation rejections.
-- **Installation-Free & Unlocked Launching** – Bypassed Play Store verification restrictions, allowing you to run imported Minecraft APKs directly.
-- **Native SO Module Loading** – Load external native SO mods and preloader modules to enhance gameplay and performance.
-- **Multi-Version Management & Version Isolation** – Manage multiple Minecraft versions independently with isolated directories, configurations, and worlds.
-- **Xbox Account & Content Management** – Switch seamlessly between multiple Xbox accounts and manage worlds, resource packs, and behavior packs.
+## Upstream vs. Unlocked
+
+| Feature | Upstream (`LiteLDev/LeviLaunchroid`) | LeviLauncher Unlocked |
+|:---|:---:|:---:|
+| **Official Play Store (`com.mojang.minecraftpe`)** | ✅ Supported | ✅ Supported |
+| **Patched Packages (`.patch`, `.prpatch`, `.capespatch`)** | ❌ Hidden / Ignored | ✅ **Auto-detected & Tagged** |
+| **Preview & Beta Packages (`minecraftpreview`, etc.)** | ❌ Not detected | ✅ **Fully Supported** |
+| **Custom Cloned Packages (e.g., custom MCBE builds)** | ❌ Rejected | ✅ **Detected via `libminecraftpe.so`** |
+| **Patched APK / APKS Importing** | ❌ Rejects ("Not a Minecraft APK") | ✅ **Direct Import Supported** |
+| **Profile & Storage Isolation** | ⚠️ Collides on single ID | ✅ **Per-package metadata & runtime isolation** |
+| **Standalone Launch (No Minecraft on system)** | ❌ Crashes ("Minecraft not found") | ✅ **Independent APK runtime fallback** |
+| **Native `.so` Mod Loading & Preloader** | ✅ Supported | ✅ Supported |
+| **Xbox Multi-Account Switcher** | ✅ Supported | ✅ Supported |
+
+---
+
+## Key Features
+
+- 🔓 **Universal Package Detection**  
+  Scans and identifies all installed Minecraft variants on your device using Android package queries and native binary heuristics (`libminecraftpe.so`), supporting official and modified packages alike.
+
+- 🏷️ **Clear Visual Suffix Badges**  
+  Instances are visually tagged in the launcher's version list with their package variant suffix (e.g. `Minecraft [.patch] (1.21.80)`, `Minecraft [.capespatch] (1.21.70)`), making multi-client setups effortless to organize.
+
+- 📦 **Seamless APK & APKS Importing**  
+  Import patched APKs and split APKS files directly. The validation logic inspects internal native architecture rather than enforcing a strict Mojang package ID check.
+
+- 🛡️ **Isolated Profiles & Runtime Environments**  
+  Each package variant stores its data in dedicated profile directories (`.levi_mc/profiles/<packageName>/`) and extracts native binaries into isolated runtime folders (`.levi_mc/minecraft_libs/<packageName>/`), preventing binary conflicts and save data collisions.
+
+- 🚀 **Installation-Free Execution**  
+  Run imported Minecraft APKs directly through the launcher without requiring Minecraft to be installed as a system package.
+
+- 🧩 **Native `.so` Mod Loader**  
+  Inject and execute custom native `.so` modules and preloaders to enhance your gameplay, performance, and custom UI.
+
+- 👤 **Account & Content Management**  
+  Switch seamlessly between multiple Xbox profiles and manage your worlds, texture packs, and behavior packs from one unified interface.
+
+---
+
+## Supported Packages
+
+LeviLauncher Unlocked is built to recognize any Minecraft: Bedrock Edition package format, including:
+
+- `com.mojang.minecraftpe` (Official Google Play release)
+- `com.mojang.minecraftpe.patch` (Common patched client format)
+- `com.mojang.minecraftpe.prpatch` (PR-patched client format)
+- `com.mojang.minecraftpe.capespatch` (Custom capes patched client format)
+- `com.mojang.minecraftpe.beta` (Bedrock Beta releases)
+- `com.mojang.minecraftpreview` (Minecraft Preview)
+- **Custom cloned & renamed packages** containing `libminecraftpe.so`
 
 ---
 
 ## System Requirements
 
-Before installing LeviLauncher Unlocked, ensure your device meets the following minimum specifications:
+| Requirement | Minimum | Recommended |
+|:---|:---|:---|
+| **Operating System** | Android 9.0 (API 28) | Android 11.0+ (API 30+) |
+| **CPU Architecture** | ARM64 (`arm64-v8a`) | ARM64 (`arm64-v8a`) |
+| **RAM** | 1 GB free | 3 GB or more |
+| **Available Storage** | 2 GB | 5 GB or more |
 
-- **Operating System:** Android 9.0 (API 28) or higher
-- **Device Architecture:** ARM64 (v8a)
-- **RAM:** Minimum 1 GB available RAM (2 GB or more recommended)
-- **Storage:** At least 2 GB of available storage for Minecraft and game data
-
-> **Note:** For optimal performance and stability, we recommend Android 9.0 or higher with at least 3 GB of available RAM and 5 GB of free storage.
+> [!NOTE]
+> On **Android 11 and newer**, package visibility restrictions apply. LeviLauncher Unlocked includes the `QUERY_ALL_PACKAGES` permission and explicit `<queries>` declarations so that your installed patched packages can be discovered automatically.
 
 ---
 
 ## Installation
 
-### Prerequisites
+### Option 1: Pre-built APK
+1. Download the latest release APK from the **[Releases](https://github.com/PixelBoy78/LeviLaunchroidUnlocked/releases)** page or from your GitHub Actions build artifacts.
+2. Ensure **"Install from unknown sources"** is enabled in your Android device's security settings.
+3. Open and install the APK on your device.
+4. Launch **LeviLauncher**, grant the required storage permissions, and your installed Minecraft versions will be detected automatically.
 
-You can use LeviLauncher Unlocked with:
-- The official Minecraft Bedrock Edition from Google Play, **OR**
-- Any installed patched/cloned version (e.g., `.patch`, `.prpatch`, `.capespatch`), **OR**
-- A standalone Minecraft APK or APKS bundle imported directly into the launcher.
-
-System installation of the official package is not mandatory if you import an APK directly.
-
-### Installation Steps
-
-1. Download the latest APK build from GitHub Releases or compile from source using GitHub Actions.
-2. Open your device Settings and navigate to Security or Applications.
-3. Enable "Allow installation from unknown sources" for your browser or file manager.
-4. Locate the downloaded APK file and tap to install.
-5. Grant the required permissions (including storage access and package query permissions).
-6. Open LeviLauncher from your app drawer.
-
+### Option 2: Standalone APK Import
+If you do not have Minecraft installed on your Android system:
+1. Open LeviLauncher Unlocked.
+2. Navigate to the **Versions / Instances** tab and choose **Import APK/APKS**.
+3. Select your Minecraft Bedrock APK file. The launcher will extract and configure an isolated instance ready to launch.
 
 ---
 
-## Development Setup
+## Building from Source
 
-If you want to build LeviLauncher from source or contribute to development, follow these steps to set up your development environment:
+To compile LeviLauncher Unlocked locally:
 
 ### Prerequisites
+- [Git](https://git-scm.com/)
+- [Android Studio Ladybug (or newer)](https://developer.android.com/studio)
+- JDK 21 or higher
+- Android SDK (API 35, Build Tools 35.0.0)
 
-- Git installed on your system
-- Android Studio (latest version recommended)
-- Java Development Kit (JDK) 21 or higher
-- Android SDK with API level 28 or higher
+### Build Commands
 
-### Setup Instructions
+```bash
+# 1. Clone the repository
+git clone https://github.com/PixelBoy78/LeviLaunchroidUnlocked.git
+cd LeviLaunchroidUnlocked
 
-1. Clone the LeviLauncher repository:
+# 2. Build Debug APK (Linux / macOS)
+./gradlew assembleDebug
 
-   ```bash
-   git clone https://github.com/0Sombra666/LeviLaunchroidUnlocked.git
-   ```
+# 2. Build Debug APK (Windows PowerShell)
+.\gradlew.bat assembleDebug
+```
 
-2. Open the project directory in Android Studio
-
-3. Allow Android Studio to download and install required dependencies and build tools
-
-4. Wait for Gradle to complete the initial sync process
-
-5. Connect your Android device or start an emulator (API 28+)
-
-6. Click the "Run" button in Android Studio to build and deploy to your device
-
-7. The app will launch automatically on successful build completion
-
-> **Build Tip:** For faster builds during development, use `Build > Make Project` to compile incrementally instead of full rebuilds.
+The compiled APK will be located at:
+`app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## Contribution Guidelines
+## Usage Guidelines & Disclaimer
 
-We welcome contributions from the community to improve LeviLauncher. To ensure a high-quality codebase and smooth collaboration, please adhere to the following guidelines:
-
-### Code Quality
-
-Write clean, modular code with descriptive variable names and consistent formatting. Follow Kotlin and Java style guidelines established in the project. Ensure your code is readable and well-structured for future maintainers.
-
-### Commit Structure
-
-Use small, focused commits with clear and descriptive messages. Each commit should address a single feature or bug fix. Example: "Fixed memory leak in version manager" or "Added support for ARM32 architecture".
-
-### Documentation
-
-Add comments for complex logic and update relevant documentation in the repository. If you add new features, update the README and any related documentation files.
-
-### Performance
-
-Optimize all additions to maintain low latency and smooth performance. Test your changes thoroughly to ensure they don't introduce lag or performance regressions.
-
-### Testing
-
-Test all changes on multiple devices and Android versions to ensure compatibility and stability.
-
-### Pull Requests
-
-Submit PRs with a detailed description of changes, including the problem solved or feature added. Reference any related issues and provide screenshots or videos if your changes affect the UI.
-
-### Community Standards
-
-Follow our Code of Conduct to maintain a respectful and inclusive environment. Be constructive in feedback, respect others' work, and communicate professionally with all contributors.
-
-**Before Submitting:** Run a full build cycle and test on at least one device to minimize errors. We review all contributions promptly and appreciate your efforts to enhance LeviLauncher.
-
----
-
-## Usage Guidelines
-
-LeviLauncher is designed for players of Minecraft Bedrock Edition. Please respect the following guidelines and terms of use:
-
-### Permitted Uses
-
-- Modify LeviLauncher for personal gameplay and to test new features
-- Create educational content (videos, tutorials, blog posts) showcasing LeviLauncher's capabilities
-- Fork the repository for learning purposes or to create derivative projects, provided you comply with the Apache License 2.0
-- Share your modified versions with others as long as you comply with the Apache License 2.0 terms
-
-### Prohibited Uses
-
-- Do not claim LeviLauncher as your own without crediting the LeviMC team and its contributors
-- Do not use LeviLauncher to violate Mojang or Microsoft's user agreements
-
-> **Disclaimer:** The authors and contributors of LeviLauncher are not responsible for bans, damages, or issues arising from the use of this software. Use it at your own risk and in accordance with Minecraft's terms of service.
-
-For full legal details, see the LICENSE and NOTICE files in the repository.
+- **Personal Use:** LeviLauncher is intended for personal gameplay, testing, and educational purposes.
+- **Fair Play:** Do not use this launcher to violate Mojang, Microsoft, or server terms of service.
+- **Liability:** The authors and contributors are not responsible for account bans, data loss, or issues resulting from the use of third-party modified clients.
 
 ---
 
 ## Credits & Acknowledgements
 
-LeviLauncher would not be possible without the contributions and support of many talented individuals and organizations:
+LeviLauncher Unlocked is built upon the incredible work of the open-source community:
 
-### Special Thanks To
+- **[LiteLDev / LeviMC](https://github.com/LiteLDev/LeviLaunchroid)** – Original creators and maintainers of LeviLaunchroid.
+- **[Android Open Source Project](https://source.android.com/)** – Tooling, runtime, and ecosystem support.
+- **All Community Contributors** – For ongoing testing, bug reports, and passion for the Minecraft Bedrock ecosystem.
 
-- **LeviMC Organization** – For maintaining the LeviLauncher project and providing infrastructure support
-- **Android Community** – For excellent documentation, libraries, and tools that made this launcher possible
-- **Open Source Community** – For all the libraries, frameworks, and tools that power this project
-- **Contributors** – A heartfelt thank you to all [contributors](https://github.com/LiteLDev/LeviLaunchroid/graphs/contributors) who have continuously improved and maintained LeviLauncher through their time and expertise
-
----
-
-## Contact & Support
-
-**Author / Team:** LeviMC Team
-
-**Project Repository:** [https://github.com/LiteLDev/LeviLaunchroid](https://github.com/LiteLDev/LeviLaunchroid)
-
-**Report Issues:** [GitHub Issues Page](https://github.com/LiteLDev/LeviLaunchroid/issues)
-
-**For support and questions:** Please create an issue on the GitHub repository or contact the LeviMC team directly
-
----
-
-<div align="center">
-
-[![GitHub Release](https://img.shields.io/github/v/release/LiteLDev/LeviLaunchroid?style=flat-square&color=blue)](https://github.com/0Sombra666/LeviLaunchroidUnlocked/releases)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Issues](https://img.shields.io/github/issues/LiteLDev/LeviLaunchroid?style=flat-square&color=red)](https://github.com/LiteLDev/LeviLaunchroid/issues)
-[![Stars](https://img.shields.io/github/stars/LiteLDev/LeviLaunchroid?style=flat-square&color=yellow)](https://github.com/LiteLDev/LeviLaunchroid)
-[![Downloads](https://img.shields.io/github/downloads/LiteLDev/LeviLaunchroid/total.svg)](https://github.com/0Sombra666/LeviLaunchroidUnlocked/releases)
-[![Android](https://img.shields.io/badge/Android-9.0%2B-green?style=flat-square&logo=android)](https://www.android.com/)
-
-**Made with ❤️ by the LeviMC Community**
-
-</div>
+LeviLauncher Unlocked is licensed under the **[Apache License 2.0](LICENSE)**.
 
 ---
 
 > [!NOTE]
-> **Notice:** This repository is just a personal testing project. I do not have any intention or plans to update or maintain it regularly.
-
+> ### Testing Project Notice
+> This repository is a personal testing and experimental project. I do not have any intention or commitment to update or maintain it regularly. Use at your own discretion.
