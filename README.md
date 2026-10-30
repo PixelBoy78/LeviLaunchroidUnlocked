@@ -23,6 +23,8 @@
 [Building](#building-from-source) •
 [Credits](#credits--acknowledgements)
 
+**[Upstream Documentation](https://docs.levimc.org/LeviLauncher/guide/quick-start?platform=android)** · **[Native Mod Development](https://docs.levimc.org/LeviLamina/developer_guides/android/)**
+
 </div>
 
 ---
@@ -46,6 +48,8 @@ While the official upstream launcher is strictly restricted to the official Goog
 | **Patched APK / APKS Importing** | ❌ Rejects ("Not a Minecraft APK") | ✅ **Direct Import Supported** |
 | **Profile & Storage Isolation** | ⚠️ Collides on single ID | ✅ **Per-package metadata & runtime isolation** |
 | **Standalone Launch (No Minecraft on system)** | ❌ Crashes ("Minecraft not found") | ✅ **Independent APK runtime fallback** |
+| **World Map & NBT Editor** | ✅ Supported | ✅ Supported |
+| **Hide HUD / Overlay Buttons** | ✅ Supported | ✅ Supported |
 | **Native `.so` Mod Loading & Preloader** | ✅ Supported | ✅ Supported |
 | **Xbox Multi-Account Switcher** | ✅ Supported | ✅ Supported |
 
@@ -67,6 +71,9 @@ While the official upstream launcher is strictly restricted to the official Goog
 
 - 🚀 **Installation-Free Execution**  
   Run imported Minecraft APKs directly through the launcher without requiring Minecraft to be installed as a system package.
+
+- 🗺️ **World Map & NBT Editor**  
+  Visualize your Minecraft worlds with a built-in world map and edit NBT data with the advanced NBT tree editor. *(Inherited from upstream v1.6.0)*
 
 - 🧩 **Native `.so` Mod Loader**  
   Inject and execute custom native `.so` modules and preloaders to enhance your gameplay, performance, and custom UI.
@@ -129,6 +136,7 @@ To compile LeviLauncher Unlocked locally:
 - [Android Studio Ladybug (or newer)](https://developer.android.com/studio)
 - JDK 21 or higher
 - Android SDK (API 35, Build Tools 35.0.0)
+- Android NDK and CMake (install them through Android Studio's SDK Manager) for native code builds
 
 ### Build Commands
 
@@ -154,6 +162,8 @@ The compiled APK will be located at:
 - **Personal Use:** LeviLauncher is intended for personal gameplay, testing, and educational purposes.
 - **Fair Play:** Do not use this launcher to violate Mojang, Microsoft, or server terms of service.
 - **Liability:** The authors and contributors are not responsible for account bans, data loss, or issues resulting from the use of third-party modified clients.
+
+For full legal details, see the [LICENSE](LICENSE) file in the repository.
 
 ---
 
