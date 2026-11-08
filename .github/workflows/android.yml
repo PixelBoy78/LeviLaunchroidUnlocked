@@ -19,6 +19,23 @@ jobs:
           fetch-depth: 0
           submodules: "recursive"
 
+      - name: Download Discord Social SDK (Optional)
+        env:
+          GH_TOKEN: ${{ secrets.DISCORD_SDK_TOKEN }}
+          DISCORD_SDK_REPOSITORY: ${{ vars.DISCORD_SDK_REPOSITORY }}
+        run: |
+          if [ -n "${GH_TOKEN:-}" ] && [ -n "${DISCORD_SDK_REPOSITORY:-}" ]; then
+            echo "Downloading Discord Partner SDK from $DISCORD_SDK_REPOSITORY..."
+            mkdir -p app/libs
+            gh release download 'discord-sdk-1.10.19337' \
+              --repo "$DISCORD_SDK_REPOSITORY" \
+              --pattern 'discord_partner_sdk.aar' \
+              --dir app/libs \
+              --clobber || echo "Discord SDK download failed, building without Discord integration"
+          else
+            echo "Discord SDK secrets not configured; building without Discord integration"
+          fi
+
       - name: Prepare google-services.json
         run: |
           mkdir -p app
@@ -64,7 +81,6 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
-
 
       - name: Accept Licenses
         run: yes | sdkmanager --licenses

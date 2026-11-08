@@ -73,7 +73,7 @@ While the official upstream launcher is strictly restricted to the official Goog
   Run imported Minecraft APKs directly through the launcher without requiring Minecraft to be installed as a system package.
 
 - 🗺️ **World Map & NBT Editor**  
-  Visualize your Minecraft worlds with a built-in world map and edit NBT data with the advanced NBT tree editor. *(Inherited from upstream v1.6.0)*
+  Visualize your Minecraft worlds with a built-in world map and edit NBT data with the advanced NBT tree editor. *(Inherited from upstream v1.6.0+)*
 
 - 🧩 **Native `.so` Mod Loader**  
   Inject and execute custom native `.so` modules and preloaders to enhance your gameplay, performance, and custom UI.

@@ -31,6 +31,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import org.levimc.launcher.R;
 import org.levimc.launcher.core.crash.CrashReporter;
+import org.levimc.launcher.core.discord.DiscordPresence;
 import org.levimc.launcher.preloader.PreloaderSignatureRulesManager;
 import org.levimc.launcher.settings.FeatureSettings;
 import org.levimc.launcher.ui.animation.DynamicAnim;
@@ -223,17 +224,17 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.vietnamese)
         };
 
-        String currentCode = languageManager.getCurrentLanguage();
+        String currentCode = Locale.forLanguageTag(languageManager.getCurrentLanguage()).getLanguage();
         int defaultIdx = switch (currentCode) {
-            case "zh", "zh-CN" -> 1;
+            case "zh" -> 1;
             case "fr" -> 2;
             case "hi" -> 3;
-            case "idn" -> 4;
+            case "id", "in" -> 4;
             case "ja" -> 5;
             case "pt" -> 6;
             case "ru" -> 7;
             case "es" -> 8;
-            case "tr", "tr-TR" -> 9;
+            case "tr" -> 9;
             case "vi" -> 10;
             default -> 0;
         };
@@ -254,7 +255,7 @@ public class SettingsActivity extends BaseActivity {
                     case 1 -> "zh-CN";
                     case 2 -> "fr";
                     case 3 -> "hi";
-                    case 4 -> "idn";
+                    case 4 -> "id";
                     case 5 -> "ja";
                     case 6 -> "pt";
                     case 7 -> "ru";
@@ -284,15 +285,19 @@ public class SettingsActivity extends BaseActivity {
             } catch (Throwable ignored) {}
         });
 
-        SwitchMaterial switchForegroundService = findViewById(R.id.switch_foreground_service);
-        switchForegroundService.setChecked(fs.isForegroundServiceEnabled());
-        switchForegroundService.setOnCheckedChangeListener((btn, checked) -> fs.setForegroundServiceEnabled(checked));
-
         SwitchMaterial switchCrashUpload = findViewById(R.id.switch_crash_upload);
         switchCrashUpload.setChecked(fs.isCrashUploadEnabled());
         switchCrashUpload.setOnCheckedChangeListener((btn, checked) -> {
             fs.setCrashUploadEnabled(checked);
             CrashReporter.refreshCrashlyticsCollection(this);
+        });
+
+        SwitchMaterial switchDiscordPresence = findViewById(R.id.switch_discord_presence);
+        switchDiscordPresence.setChecked(fs.isDiscordRichPresenceEnabled());
+        switchDiscordPresence.setEnabled(DiscordPresence.isConfigured());
+        switchDiscordPresence.setOnCheckedChangeListener((btn, checked) -> {
+            fs.setDiscordRichPresenceEnabled(checked);
+            DiscordPresence.refresh();
         });
 
         SwitchMaterial switchManagedLogin = findViewById(R.id.switch_managed_login);
@@ -501,12 +506,12 @@ public class SettingsActivity extends BaseActivity {
             switchLogcat.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
         }
         
-        SwitchMaterial switchForegroundService = findViewById(R.id.switch_foreground_service);
-        if (switchForegroundService != null && accent != 0) {
+        SwitchMaterial switchDiscordPresence = findViewById(R.id.switch_discord_presence);
+        if (switchDiscordPresence != null && accent != 0) {
             int[][] states = {{android.R.attr.state_checked}, {}};
-            switchForegroundService.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
+            switchDiscordPresence.setThumbTintList(new ColorStateList(states, new int[]{accent, 0xFFAAAAAA}));
             int trackChecked = Color.argb(100, Color.red(accent), Color.green(accent), Color.blue(accent));
-            switchForegroundService.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
+            switchDiscordPresence.setTrackTintList(new ColorStateList(states, new int[]{trackChecked, 0xFF555555}));
         }
 
         SwitchMaterial switchManagedLogin = findViewById(R.id.switch_managed_login);
