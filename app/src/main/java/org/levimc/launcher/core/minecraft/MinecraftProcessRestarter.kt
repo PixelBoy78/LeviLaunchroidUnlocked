@@ -226,7 +226,7 @@ class LauncherRestartActivity : BaseActivity() {
         )
 
         val appName = TextView(this).apply {
-            text = getString(R.string.app_name)
+            text = getString(R.string.loading_app_name)
             setTextColor(accent)
             textSize = 13f
             gravity = Gravity.CENTER
