@@ -7,3 +7,4 @@ public final class DiscordSocialSdkInit {
         // Stub implementation when Discord Partner SDK AAR is not present
     }
 }
+
