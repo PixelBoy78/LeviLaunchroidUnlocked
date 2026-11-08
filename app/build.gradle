@@ -27,16 +27,19 @@ def discordLargeImage = providers.gradleProperty('discord.large_image')
         .getOrElse(discordProperties.getProperty('large_image', '')).trim()
 
 def getGitTag() {
-    def tag = "unknown"
+    def tag = "1.6.1"
     try {
         def stdout = new ByteArrayOutputStream()
         exec {
             commandLine 'git', 'describe', '--tags', '--abbrev=0'
             standardOutput = stdout
         }
-        tag = stdout.toString().trim()
-        if (tag.startsWith("v")) {
-            tag = tag.substring(1)
+        def parsed = stdout.toString().trim()
+        if (parsed.startsWith("v")) {
+            parsed = parsed.substring(1)
+        }
+        if (!parsed.isEmpty()) {
+            tag = parsed
         }
     } catch (ignored) {
     }
@@ -58,7 +61,7 @@ android {
         minSdkVersion 28
         targetSdkVersion 35
         versionCode getVersionCodeByTimestamp()
-        versionName "1.5.27"
+        versionName getGitTag()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "CURSEFORGE_API_KEY", "\"${localProperties.getProperty('curseforge.api_key', '')}\""
         buildConfigField 'long', 'DISCORD_APPLICATION_ID', "${discordApplicationId}L"

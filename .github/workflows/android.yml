@@ -123,7 +123,12 @@ jobs:
       - name: Sign APK with testkey
         run: |
           APK_IN=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
-          APK_OUT="LeviLauncher-${GITHUB_REF_NAME}-release.apk"
+          VERSION_NAME=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "1.6.1")
+          if [ "${GITHUB_REF_NAME}" = "main" ] || [ -z "${GITHUB_REF_NAME}" ]; then
+            APK_OUT="LeviLauncher-${VERSION_NAME}-release.apk"
+          else
+            APK_OUT="LeviLauncher-${GITHUB_REF_NAME}-release.apk"
+          fi
           apksigner sign \
             --key testkey.pk8 \
             --cert testkey.x509.pem \
