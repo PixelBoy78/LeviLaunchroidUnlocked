@@ -3,8 +3,13 @@ name: Android CI
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (leave empty for automatic version based on git tag, e.g. v1.6.1)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -123,12 +128,19 @@ jobs:
       - name: Sign APK with testkey
         run: |
           APK_IN=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
-          VERSION_NAME=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "1.6.1")
-          if [ "${GITHUB_REF_NAME}" = "main" ] || [ -z "${GITHUB_REF_NAME}" ]; then
-            APK_OUT="LeviLauncher-${VERSION_NAME}-release.apk"
-          else
-            APK_OUT="LeviLauncher-${GITHUB_REF_NAME}-release.apk"
+          VERSION_NAME=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null | sed 's/^v//' || echo "")
+          if [ -z "$VERSION_NAME" ] || ! echo "$VERSION_NAME" | grep -qE '^[0-9]'; then
+            VERSION_NAME="1.6.1"
           fi
+          INPUT_TAG="${{ inputs.release_tag }}"
+          if [ -n "$INPUT_TAG" ]; then
+            RELEASE_TAG="$INPUT_TAG"
+          elif [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "main" ]; then
+            RELEASE_TAG="${GITHUB_REF_NAME}"
+          else
+            RELEASE_TAG="v${VERSION_NAME}"
+          fi
+          APK_OUT="LeviLauncher-${RELEASE_TAG}-release.apk"
           apksigner sign \
             --key testkey.pk8 \
             --cert testkey.x509.pem \
@@ -139,6 +151,7 @@ jobs:
             --out "$APK_OUT" \
             "$APK_IN"
           echo "APK_OUT=$APK_OUT" >> $GITHUB_ENV
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -156,10 +169,10 @@ jobs:
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "LeviLauncher Unlocked ${{ github.ref_name }}"
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "LeviLauncher Unlocked ${{ env.RELEASE_TAG }}"
           files: ${{ env.APK_OUT }}
           generate_release_notes: true
         env:
